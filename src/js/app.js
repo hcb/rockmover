@@ -4,12 +4,67 @@ window.onload = function () {
         ctx = canvas.getContext("2d"),
         blockScale = 30,
         blocks = [],
+        activeBlock = null,
         colors = ["#6813AA", "#FFFF49", "#1962D1", "#DEBDCF", "#7D2866", "#46646A", "#D95C48", "#A52180", "#25EE2B", "#EA802F", "#665CBC", "#785C59"];
     canvas.height = 600;
     canvas.width = 600;
 
     var columnCount = canvas.width / blockScale,
         rowCount = canvas.height / blockScale;
+
+    canvas.addEventListener("mousemove", function (event) {
+        // highlight the mouseover target
+        var rect = canvas.getBoundingClientRect();
+        var position = createVector(Math.floor((event.clientX - rect.left) / blockScale), Math.floor((event.clientY - rect.top) / blockScale));
+        if(getBlockAtPosition(position)) {
+            activeBlock = getBlockAtPosition(position);
+        } else {
+            activeBlock = null;
+        }
+    }, false);
+
+    var startDragPosition,
+        endDragPosition,
+        delta;
+
+    var bindDrag = function() {
+        var active = null;
+        canvas.addEventListener("mousedown", function(event){
+
+            console.log("mousedown");
+            var rect = canvas.getBoundingClientRect();
+            startDragPosition = createVector(Math.floor((event.clientX - rect.left) / blockScale), Math.floor((event.clientY - rect.top) / blockScale));
+
+            if (getBlockAtPosition(startDragPosition)) {
+                active = getBlockAtPosition(startDragPosition);
+                console.log(active);
+            }
+
+        }, false);
+
+        canvas.addEventListener("mouseup", function(event){
+
+            console.log("mouseup");
+
+            var rect = canvas.getBoundingClientRect();
+            var endDragPosition = createVector(Math.floor((event.clientX - rect.left) / blockScale), Math.floor((event.clientY - rect.top) / blockScale));
+
+            var deltaX = endDragPosition.x - startDragPosition.x;
+
+            if (Math.abs(deltaX) >= 1 && active != null) {
+                var newX = deltaX > 0 ? active.pos.x + 1 : active.pos.x - 1;
+                var newPos = createVector(newX, startDragPosition.y);
+
+                console.log("active block", active, "new pos", newPos);
+                if (couldBlockBeMoved(active, newPos)) {
+                    active.pos = newPos;
+                    drawBlocks();
+                }
+            }
+        }, false);
+    };
+
+    bindDrag();
 
     var Block = function (pos, dim) {
         this.pos = pos;
@@ -21,8 +76,8 @@ window.onload = function () {
         var height = vertical ? Math.floor(Math.random() * 3) + 1 : 1;
         var width = vertical ? 1 : Math.floor(Math.random() * 3) + 1;
         return new Block({
-            x: Math.floor(Math.random() * columnCount),
-            y: Math.floor(Math.random() * rowCount)
+            x: Math.round(Math.random() * columnCount),
+            y: Math.round(Math.random() * rowCount)
         },
         {
             width: width,
@@ -31,7 +86,6 @@ window.onload = function () {
     };
 
     var getBlockAtPosition = function (pos) {
-
         for (var i = 0; i < blocks.length; i++) {
             var block = blocks[i];
             if (pos.x >= block.pos.x && pos.x < block.pos.x + block.dim.width &&
@@ -88,7 +142,7 @@ window.onload = function () {
     };
 
     var createBlocks = function () {
-        while (blocks.length < 20) {
+        while (blocks.length < 100) {
             var block = generateBlock();
             if (couldBlockBeMoved(block, block.pos)) {
                  blocks.push(block);
@@ -96,18 +150,38 @@ window.onload = function () {
         }
     };
 
-    var drawBlock = function (block) {
+    var drawBlock = function (block, color) {
+        var fillColor = activeBlock != null && activeBlock == block ? colors[1] : colors[2];
+        ctx.strokeStyle = "#444";
         ctx.beginPath();
         ctx.rect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
         ctx.strokeRect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
         //ctx.fillStyle = colors[Math.round(Math.random() * (colors.length - 1))];
-        ctx.fillStyle = colors[2];
+        ctx.fillStyle = fillColor;
         ctx.fill();
         ctx.closePath();
     };
 
+    var drawGrid = function() {
+       ctx.lineWidth = 1;
+       ctx.strokeStyle = "#ddd";
+        for (var i = 0; i < rowCount; i++){
+           ctx.beginPath();
+           ctx.moveTo(0, blockScale * i);
+           ctx.lineTo(canvas.width, blockScale * i);
+           ctx.stroke();
+           ctx.closePath();
+           ctx.beginPath();
+           ctx.moveTo(blockScale * i, 0);
+           ctx.lineTo(blockScale * i, canvas.height);
+           ctx.stroke();
+           ctx.closePath();
+        }
+    };
+
     var drawBlocks = function () {
         ctx.clearRect(0,0, canvas.width, canvas.height);
+        drawGrid();
         blocks.forEach(drawBlock);
     };
 
@@ -120,9 +194,12 @@ window.onload = function () {
 
     createBlocks();
 
+
     setInterval(function () {
         loop();
-    }, 1000);
+        //console.log(blocks);
+    }, 100);
+
     //requestAnimationFrame(loop);
 
 };
