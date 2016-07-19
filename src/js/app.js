@@ -11,11 +11,15 @@ window.onload = function () {
 
     var columnCount = canvas.width / blockScale,
         rowCount = canvas.height / blockScale;
+        console.log(columnCount, rowCount);
+    var startDragPosition,
+        endDragPosition,
+        delta;
 
     canvas.addEventListener("mousemove", function (event) {
         // highlight the mouseover target
         var rect = canvas.getBoundingClientRect();
-        var position = createVector(Math.floor((event.clientX - rect.left) / blockScale), Math.floor((event.clientY - rect.top) / blockScale));
+        var position = getPointerVector();
         if(getBlockAtPosition(position)) {
             activeBlock = getBlockAtPosition(position);
         } else {
@@ -23,48 +27,46 @@ window.onload = function () {
         }
     }, false);
 
-    var startDragPosition,
-        endDragPosition,
-        delta;
+
+    var getPointerVector = function() {
+        var rect = canvas.getBoundingClientRect();
+        return createVector(Math.floor((event.clientX - rect.left) / blockScale),
+                            Math.floor((event.clientY - rect.top) / blockScale));
+    };
 
     var bindDrag = function() {
         var active = null;
         canvas.addEventListener("mousedown", function(event){
 
-            console.log("mousedown");
-            var rect = canvas.getBoundingClientRect();
-            startDragPosition = createVector(Math.floor((event.clientX - rect.left) / blockScale), Math.floor((event.clientY - rect.top) / blockScale));
+            startDragPosition = getPointerVector();
 
             if (getBlockAtPosition(startDragPosition)) {
                 active = getBlockAtPosition(startDragPosition);
-                console.log(active);
             }
 
         }, false);
 
         canvas.addEventListener("mouseup", function(event){
 
-            console.log("mouseup");
-
-            var rect = canvas.getBoundingClientRect();
-            var endDragPosition = createVector(Math.floor((event.clientX - rect.left) / blockScale), Math.floor((event.clientY - rect.top) / blockScale));
+            endDragPosition = getPointerVector();
 
             var deltaX = endDragPosition.x - startDragPosition.x;
 
             if (Math.abs(deltaX) >= 1 && active != null) {
                 var newX = deltaX > 0 ? active.pos.x + 1 : active.pos.x - 1;
-                var newPos = createVector(newX, startDragPosition.y);
+                var newPos = createVector(newX, active.pos.y);
 
-                console.log("active block", active, "new pos", newPos);
                 if (couldBlockBeMoved(active, newPos)) {
                     active.pos = newPos;
                     drawBlocks();
                 }
+
             }
+
+            active = null;
+
         }, false);
     };
-
-    bindDrag();
 
     var Block = function (pos, dim) {
         this.pos = pos;
@@ -75,9 +77,18 @@ window.onload = function () {
         var vertical = Math.round(Math.random()) === 0;
         var height = vertical ? Math.floor(Math.random() * 3) + 1 : 1;
         var width = vertical ? 1 : Math.floor(Math.random() * 3) + 1;
+        var x = Math.floor(Math.random() * columnCount);
+        if (x + width > columnCount) {
+            x -= width;
+        }
+        var y = Math.floor(Math.random() * rowCount);
+        if (y + height > rowCount) {
+            y -= width;
+        }
+
         return new Block({
-            x: Math.round(Math.random() * columnCount),
-            y: Math.round(Math.random() * rowCount)
+            x: x,
+            y: y
         },
         {
             width: width,
@@ -133,6 +144,10 @@ window.onload = function () {
     };
 
     var moveBlocksDown = function () {
+        blocks.sort(function(a, b) {
+            return b.pos.y - a.pos.y;
+        });
+
         blocks.forEach(function (block) {
             var newPosition = addVectors(block.pos, createVector(0, 1));
             if (couldBlockBeMoved(block, newPosition)) {
@@ -193,12 +208,12 @@ window.onload = function () {
     };
 
     createBlocks();
-
+    bindDrag();
 
     setInterval(function () {
         loop();
         //console.log(blocks);
-    }, 100);
+    }, 200);
 
     //requestAnimationFrame(loop);
 
