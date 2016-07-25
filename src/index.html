@@ -3,11 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>rockmover</title>
+    <link href="https://fonts.googleapis.com/css?family=Heebo" rel="stylesheet" type="text/css">
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+
 </head>
 <body>
-    <canvas id="canvas">
+    <div class="canvas-wrapper">
+        <canvas id="canvas">
 
-    </canvas>
+        </canvas>
+
+        <div id="score" class="message">
+            <p id="score__text">
+                Final score: <span id="score__number"></span>
+            </p>
+            <button id="new-game">
+                New Game
+            </button>
+        </div>
+        <div id="end-game" class="message">
+            <p>
+                Are you done?
+            </p>
+            <button id="end">Finish Game</button>
+        </div>    
+    </div>
+
+
+
     <script src="js/app.js"></script>
 </body>
 </html>
