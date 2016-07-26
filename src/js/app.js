@@ -4,13 +4,14 @@ window.onload = function() {
     var canvas = document.getElementById("canvas"),
         ctx = canvas.getContext("2d"),
         blockScale = 30,
+        spriteScale = 40,
         blocks = [],
         blockAtPointer = null,
         colors = ["#6813AA", "#FFFF49", "#1962D1", "#DEBDCF", "#7D2866", "#46646A", "#D95C48", "#A52180", "#25EE2B", "#EA802F", "#665CBC", "#785C59"];
 
 
     canvas.height = 600;
-    canvas.width = 600;
+    canvas.width = 900;
 
     var columnCount = canvas.width / blockScale,
         rowCount = canvas.height / blockScale,
@@ -88,43 +89,61 @@ window.onload = function() {
 
     // Creates a new block with a random height, width, and coordinates
     var generateBlock = function() {
-
       var blockSet = [
         {
             dim: { width: 1, height: 1},
-            spriteVector: createVector(40, 40)
+            spriteVector: createVector(40, 40),
+            weight: 1
         },
         {
             dim: { width: 1, height: 2},
-            spriteVector: createVector(40, 200)
+            spriteVector: createVector(40, 200),
+            weight: 1
         },
         {
             dim: { width: 1, height: 3},
-            spriteVector: createVector(120, 200)
+            spriteVector: createVector(120, 200),
+            weight: 1
         },
         {
             dim: { width: 2, height: 1},
-            spriteVector: createVector(120, 40)
+            spriteVector: createVector(120, 40),
+            weight: 1
         },
         {
             dim: { width: 3, height: 1},
-            spriteVector: createVector(120, 120)
+            spriteVector: createVector(120, 120),
+            weight: 1.75
         }
       ];
-        var block = blockSet[Math.floor(Math.random() * blockSet.length)];
 
+        var totalWeight = 0;
+        blockSet.forEach( function(el) {
+          totalWeight += el.weight;
+        });
+
+        var randomValue = Math.random() * totalWeight;
+        var randomBlock = blockSet[0];
+
+        for (var i = 0; i < blockSet.length; i++) {
+          if (randomValue < blockSet[i].weight) {
+            randomBlock = blockSet[i];
+            break;
+          } else {
+            randomValue -= blockSet[i].weight;
+          }
+        }
 
         var x = Math.floor(Math.random() * columnCount);
-        // If x or y position places the block outside the canvas, modify the position
-        if (x + block.dim.width > columnCount) {
-            x -= block.dim.width;
-        }
+        // If x places the block outside the canvas, modify the position
+        if (x + randomBlock.dim.width > columnCount)
+            x -= randomBlock.dim.width;
         var y = Math.floor(Math.random() * 3);
 
         return new Block({
             x: x,
-            y: 0
-        }, block.dim, block.spriteVector);
+            y: -randomBlock.dim.height
+        }, randomBlock.dim, randomBlock.spriteVector);
     };
 
     // Returns number of empty blocks remaining on the board (the scoring metric)
@@ -228,15 +247,11 @@ window.onload = function() {
 
     /*
      * Canvas / Drawing
-     *
      */
-
     var drawBlock = function(block, color) {
         var fillColor = blockAtPointer !== null && blockAtPointer == block ? colors[1] : colors[2];
         ctx.strokeStyle = "#333";
         ctx.beginPath();
-        spriteScale = 40;
-
 
         ctx.drawImage(spriteImage,
             block.spriteVector.x,
@@ -248,7 +263,7 @@ window.onload = function() {
             block.dim.width * blockScale,
             block.dim.height * blockScale);
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.strokeRect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
         ctx.closePath();
     };
@@ -256,7 +271,7 @@ window.onload = function() {
     var drawGrid = function() {
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#ddd";
-        for (var i = 0; i < rowCount; i++) {
+        for (var i = 0; i < columnCount; i++) {
             ctx.beginPath();
             ctx.moveTo(0, blockScale * i);
             ctx.lineTo(canvas.width, blockScale * i);
