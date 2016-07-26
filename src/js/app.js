@@ -7,6 +7,8 @@ window.onload = function() {
         blocks = [],
         blockAtPointer = null,
         colors = ["#6813AA", "#FFFF49", "#1962D1", "#DEBDCF", "#7D2866", "#46646A", "#D95C48", "#A52180", "#25EE2B", "#EA802F", "#665CBC", "#785C59"];
+
+
     canvas.height = 600;
     canvas.width = 600;
 
@@ -60,7 +62,6 @@ window.onload = function() {
         scoreContainer.style.visibility = "hidden";
         endButton.addEventListener("click", function() {
             clearInterval(startInt);
-            console.log("cleared interval");
             canvas.style.pointerEvents = "none";
             buttonContainer.style.visibility = "hidden";
             (document.getElementById("score__number")).innerHTML = getScore();
@@ -79,35 +80,51 @@ window.onload = function() {
     };
 
     // Block class
-    var Block = function(pos, dim, spritePos) {
+    var Block = function(pos, dim, spriteVector) {
         this.pos = pos;
         this.dim = dim;
-        this.spritePos = spritePos;
+        this.spriteVector = spriteVector
     };
 
     // Creates a new block with a random height, width, and coordinates
     var generateBlock = function() {
-        var vertical = Math.round(Math.random()) === 0;
-        var height = vertical ? Math.floor(Math.random() * 3) + 1 : 1;
-        var width = vertical ? 1 : Math.floor(Math.random() * 3) + 1;
+
+      var blockSet = [
+        {
+            dim: { width: 1, height: 1},
+            spriteVector: createVector(40, 40)
+        },
+        {
+            dim: { width: 1, height: 2},
+            spriteVector: createVector(40, 200)
+        },
+        {
+            dim: { width: 1, height: 3},
+            spriteVector: createVector(120, 200)
+        },
+        {
+            dim: { width: 2, height: 1},
+            spriteVector: createVector(120, 40)
+        },
+        {
+            dim: { width: 3, height: 1},
+            spriteVector: createVector(120, 120)
+        }
+      ];
+        var block = blockSet[Math.floor(Math.random() * blockSet.length)];
+
+
         var x = Math.floor(Math.random() * columnCount);
         // If x or y position places the block outside the canvas, modify the position
-        if (x + width > columnCount) {
-            x -= width;
+        if (x + block.dim.width > columnCount) {
+            x -= block.dim.width;
         }
         var y = Math.floor(Math.random() * 3);
-
-        var spritePos = [];
 
         return new Block({
             x: x,
             y: 0
-        }, {
-            width: width,
-            height: height
-        },
-            spritePos
-        );
+        }, block.dim, block.spriteVector);
     };
 
     // Returns number of empty blocks remaining on the board (the scoring metric)
@@ -144,22 +161,26 @@ window.onload = function() {
     // Create blocks to populate the board
     var createNewBlocks = function() {
         var block = generateBlock();
-        if (couldBlockBeMoved(block, block.pos)) {
-            blocks.push(block);
+        var tries = 0;
+
+        while (tries < 10) {
+          if (couldBlockBeMoved(block, block.pos)) {
+              blocks.push(block);
+              return;
+          }
+          tries++;
         }
     };
 
     // Returns true if block could be placed at newPosition without overlapping another block
     var couldBlockBeMoved = function(block, newPosition) {
-        var x,
-            y;
         // Let's handle cases where y = canvas.height
         if (newPosition.y + block.dim.height > rowCount) {
             return false;
         }
 
-        for (x = newPosition.x; x < newPosition.x + block.dim.width; x += 1) {
-            for (y = newPosition.y; y < newPosition.y + block.dim.height; y += 1) {
+        for (var x = newPosition.x; x < newPosition.x + block.dim.width; x += 1) {
+            for (var y = newPosition.y; y < newPosition.y + block.dim.height; y += 1) {
                 var blockAtPosition = getBlockAtPosition(createVector(x, y));
                 if (blockAtPosition !== null && blockAtPosition != block) {
                     return false;
@@ -212,32 +233,23 @@ window.onload = function() {
 
     var drawBlock = function(block, color) {
         var fillColor = blockAtPointer !== null && blockAtPointer == block ? colors[1] : colors[2];
-        ctx.strokeStyle = "#222";
+        ctx.strokeStyle = "#333";
         ctx.beginPath();
         spriteScale = 40;
 
 
-        for (var x = block.pos.x; x < block.pos.x + block.dim.width; x++) {
-            for (var y = block.pos.y; y < block.pos.y + block.dim.height; y++) {
-                console.log(x);
+        ctx.drawImage(spriteImage,
+            block.spriteVector.x,
+            block.spriteVector.y,
+            block.dim.width * spriteScale,
+            block.dim.height * spriteScale,
+            block.pos.x * blockScale,
+            block.pos.y * blockScale,
+            block.dim.width * blockScale,
+            block.dim.height * blockScale);
 
-                ctx.drawImage(spriteImage,
-                    40,
-                    41,
-                    40,
-                    40,
-                    x * blockScale,
-                    y * blockScale,
-                    30,
-                    30);
-            }
-        }
-
-        //ctx.rect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
         ctx.lineWidth = 2;
         ctx.strokeRect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
-        //ctx.fillStyle = fillColor;
-        //ctx.fill();
         ctx.closePath();
     };
 
