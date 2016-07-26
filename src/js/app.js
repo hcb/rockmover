@@ -79,9 +79,10 @@ window.onload = function() {
     };
 
     // Block class
-    var Block = function(pos, dim) {
+    var Block = function(pos, dim, spritePos) {
         this.pos = pos;
         this.dim = dim;
+        this.spritePos = spritePos;
     };
 
     // Creates a new block with a random height, width, and coordinates
@@ -96,13 +97,17 @@ window.onload = function() {
         }
         var y = Math.floor(Math.random() * 3);
 
+        var spritePos = [];
+
         return new Block({
             x: x,
             y: 0
         }, {
             width: width,
             height: height
-        });
+        },
+            spritePos
+        );
     };
 
     // Returns number of empty blocks remaining on the board (the scoring metric)
@@ -207,12 +212,32 @@ window.onload = function() {
 
     var drawBlock = function(block, color) {
         var fillColor = blockAtPointer !== null && blockAtPointer == block ? colors[1] : colors[2];
-        ctx.strokeStyle = "#444";
+        ctx.strokeStyle = "#222";
         ctx.beginPath();
-        ctx.rect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
+        spriteScale = 40;
+
+
+        for (var x = block.pos.x; x < block.pos.x + block.dim.width; x++) {
+            for (var y = block.pos.y; y < block.pos.y + block.dim.height; y++) {
+                console.log(x);
+
+                ctx.drawImage(spriteImage,
+                    40,
+                    41,
+                    40,
+                    40,
+                    x * blockScale,
+                    y * blockScale,
+                    30,
+                    30);
+            }
+        }
+
+        //ctx.rect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
+        ctx.lineWidth = 2;
         ctx.strokeRect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
-        ctx.fillStyle = fillColor;
-        ctx.fill();
+        //ctx.fillStyle = fillColor;
+        //ctx.fill();
         ctx.closePath();
     };
 
@@ -252,6 +277,12 @@ window.onload = function() {
         bindEvents();
         startInt = setInterval(loop, 100);
     };
+
+
+    var spriteImage = new Image();
+    spriteImage.src = "img/PAVE.png";
+
+
 
     init();
 
