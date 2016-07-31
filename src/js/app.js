@@ -20,10 +20,11 @@ window.onload = function() {
         delta;
 
     var bindEvents = function() {
-        var buttonContainer = document.getElementById("end-game");
-        var scoreContainer = document.getElementById("score");
+        var buttonContainer = document.getElementById("buttons");
         var endButton = document.getElementById("end");
+        var newGameButton = document.getElementById("new");
         var active = null;
+        var mouseDown = false;
 
         canvas.addEventListener("mousemove", function() {
             // highlight the mouseover target
@@ -33,50 +34,63 @@ window.onload = function() {
             } else {
                 blockAtPointer = null;
             }
+
+
+            if (mouseDown) {
+                endDragPosition = getPointerVector();
+                var deltaX = endDragPosition.x - startDragPosition.x;
+                console.log(deltaX);
+                if (Math.abs(deltaX) >= 1 && active !== null) {
+                    // var newX = deltaX > 0 ? active.pos.x + 1 : active.pos.x - 1;
+                    var newX = active.pos.x + deltaX;
+                    if (newX < 0) {
+                        newX = 0;
+                    } else if (newX + active.dim.width > columnCount) {
+                        newX = columnCount - active.dim.width;
+                    }
+                    var newPos = createVector(newX, active.pos.y);
+                    if (couldBlockBeMoved(active, newPos)) {
+                        active.pos = newPos;
+                        drawBlocks();
+                        active = null;
+                    }
+                }
+            }
+
         }, false);
 
         canvas.addEventListener("mousedown", function() {
             startDragPosition = getPointerVector();
             if (getBlockAtPosition(startDragPosition)) {
                 active = getBlockAtPosition(startDragPosition);
+                mouseDown = true;
             }
         }, false);
 
         canvas.addEventListener("mouseup", function() {
-            endDragPosition = getPointerVector();
-            var deltaX = endDragPosition.x - startDragPosition.x;
-            if (Math.abs(deltaX) >= 1 && active !== null) {
-                var newX = deltaX > 0 ? active.pos.x + 1 : active.pos.x - 1;
-                if (newX < 0) {
-                    newX = 0;
-                } else if (newX + active.dim.width > columnCount) {
-                    newX = columnCount - active.dim.width;
-                }
-                var newPos = createVector(newX, active.pos.y);
-                if (couldBlockBeMoved(active, newPos)) {
-                    active.pos = newPos;
-                    drawBlocks();
-                }
-            }
+
+                    mouseDown = false;
+                    active = null;
         }, false);
 
-        scoreContainer.style.visibility = "hidden";
+        newGameButton.style.visibility = "hidden";
         endButton.addEventListener("click", function() {
-            clearInterval(startInt);
+            cancelAnimationFrame(loop);
+            newGameButton.style.visibility = "visible";
             canvas.style.pointerEvents = "none";
-            buttonContainer.style.visibility = "hidden";
+            endButton.style.visibility = "hidden";
             (document.getElementById("score__number")).innerHTML = getScore();
-            scoreContainer.style.visibility = "visible";
         }, false);
 
-        var newGameButton = document.getElementById("new-game");
         newGameButton.addEventListener("click", function () {
-            buttonContainer.style.visibility = "visible";
-            scoreContainer.style.visibility = "hidden";
+
+                    newGameButton.style.visibility = "hidden";
+            endButton.style.visibility = "visible";
+            (document.getElementById("score__number")).innerHTML = 0;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             blocks = [];
             canvas.style.pointerEvents = "auto";
-            startInt = setInterval(loop, 100);
+            requestAnimationFrame(loop);
         });
     };
 
@@ -113,7 +127,7 @@ window.onload = function() {
         {
             dim: { width: 3, height: 1},
             spriteVector: createVector(120, 120),
-            weight: 1.75
+            weight: 1.6
         }
       ];
 
@@ -182,7 +196,7 @@ window.onload = function() {
         var block = generateBlock();
         var tries = 0;
 
-        while (tries < 10) {
+        while (tries < 20) {
           if (couldBlockBeMoved(block, block.pos)) {
               blocks.push(block);
               return;
@@ -249,12 +263,13 @@ window.onload = function() {
      * Canvas / Drawing
      */
     var drawBlock = function(block, color) {
-        var fillColor = blockAtPointer !== null && blockAtPointer == block ? colors[1] : colors[2];
-        ctx.strokeStyle = "#333";
+        //var strokeColor = blockAtPointer !== null && blockAtPointer == block ? "#ccc" : "#333";
+        //ctx.strokeStyle = "#ccc";
         ctx.beginPath();
+        var spritePosX = blockAtPointer !== null && blockAtPointer == block ? block.spriteVector.x + 6 * spriteScale : block.spriteVector.x;
 
         ctx.drawImage(spriteImage,
-            block.spriteVector.x,
+            spritePosX,
             block.spriteVector.y,
             block.dim.width * spriteScale,
             block.dim.height * spriteScale,
@@ -264,7 +279,7 @@ window.onload = function() {
             block.dim.height * blockScale);
 
         ctx.lineWidth = 1;
-        ctx.strokeRect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
+        //ctx.strokeRect(block.pos.x * blockScale, block.pos.y * blockScale, block.dim.width * blockScale, block.dim.height * blockScale);
         ctx.closePath();
     };
 
@@ -294,22 +309,36 @@ window.onload = function() {
     /*
      * game loop
      */
+    var startTime = Date.now();
+    var framesPerSecond = 20;
+    var interval = 1000 / framesPerSecond;
+
     var loop = function() {
-        drawBlocks();
-        moveBlocksDown();
-        createNewBlocks();
+        requestAnimationFrame(loop);
+
+        var now = Date.now();
+        var delta = now - startTime;
+
+        if (delta > interval) {
+
+            startTime = now - (delta % interval);
+
+            drawBlocks();
+            moveBlocksDown();
+            createNewBlocks();
+            (document.getElementById("score__number")).innerHTML = getScore();
+        }
     };
 
     var init = function() {
         bindEvents();
-        startInt = setInterval(loop, 100);
+        //startInt = setInterval(loop, 100);
+        requestAnimationFrame(loop);
     };
 
 
     var spriteImage = new Image();
     spriteImage.src = "img/PAVE.png";
-
-
 
     init();
 
