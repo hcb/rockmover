@@ -3,24 +3,72 @@ body {
     font-size: 16px;
     position: relative;
     margin: 0 auto;
+    background: #ddd;
 }
 
+
 .canvas-wrapper {
-    margin: 0 auto;
+    margin: 5rem auto;
     display: block;
     width: 900px;
     position: relative;
 }
 
-.message {
+canvas {
+    background: #f9f9f9;
+    border: 2px solid #aaa;
+}
+
+.canvas__header {
+    background: #444;;
+    color: white;
+    width: 902px;
+    border: 1px solid #444;
+    border-bottom: 1px solid #444;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    display: flex;
+}
+
+.canvas__header h4 {
+    margin: 10px 50px 10px 10px;
+    display: inline-block;
+}
+
+.score__text,
+.canvas__header .message,
+.canvas__header .message p {
+
+}
+.canvas__header .message p {
+    margin: 0;
+    display: inline-block;
+}
+
+.canvas__header button {
+    background: #c00;
+    color: white;
+    border: none;
+    outline: 0;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.canvas__header .message {
+    text-align: right;
+    padding: 10px;
+    width: 33%;
+}
+
+/*.message {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+        right: -250px;
     width: 150px;
     padding: 1rem;
-    right: -250px;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 3px;
     border: 1px solid #ddd;
     text-align: center;
-}
+}*/

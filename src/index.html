@@ -4,29 +4,38 @@
     <meta charset="UTF-8">
     <title>rockmover</title>
     <link href="https://fonts.googleapis.com/css?family=Heebo" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css">
     <link href="css/main.css" rel="stylesheet" type="text/css">
 
 </head>
 <body>
     <div class="canvas-wrapper">
+
+        <div class="canvas__header">
+            <h4>Rockmover</h4>
+
+            <div id="score" class="message">
+                <p id="score__text">
+                    Final score: <span id="score__number"></span>
+                </p>
+            </div>
+
+            <div id="buttons" class="message">
+                <!-- <p>
+                    Are you done?
+                </p> -->
+                <button id="new">
+                    New Game
+                </button>
+                <button id="end">Finish Game</button>
+            </div>
+
+
+        </div>
         <canvas id="canvas">
 
         </canvas>
 
-        <div id="score" class="message">
-            <p id="score__text">
-                Final score: <span id="score__number"></span>
-            </p>
-            <button id="new-game">
-                New Game
-            </button>
-        </div>
-        <div id="end-game" class="message">
-            <p>
-                Are you done?
-            </p>
-            <button id="end">Finish Game</button>
-        </div>    
     </div>
 
 
