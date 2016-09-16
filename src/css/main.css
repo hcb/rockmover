@@ -3,72 +3,83 @@ body {
     font-size: 16px;
     position: relative;
     margin: 0 auto;
-    background: #ddd;
+    background-color: #eee;
+    background-size: 1em 1em;
+    height: 100vh;
 }
-
-
 .canvas-wrapper {
     margin: 5rem auto;
     display: block;
     width: 900px;
-    position: relative;
+    height: 634px;
+    border: 6px solid #CECECE;
+    box-shadow: 2px 2px 0 2px rgba(0, 0, 0, 0.5);
+    outline: 1px solid #888;
 }
-
 canvas {
     background: #f9f9f9;
-    border: 2px solid #aaa;
-}
-
-.canvas__header {
-    background: #444;;
-    color: white;
-    width: 902px;
+    border-top-width: 0;
+    cursor: pointer;
     border: 1px solid #444;
-    border-bottom: 1px solid #444;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    box-shadow: 1px 1px 0 #eee, -1px -1px 0 #888;
+}
+.canvas__header {
+    background: #CECECE;
+    color: #222;
+    width: 900px;
     display: flex;
+    height: 30px;
+    position: relative;
+    font-size: 14px;
+}    .canvas__header:before {
+    content: "";
+    display: block;
+    width: 910px;
+    border-top: 1px solid #eee;
+    height: 1px;
+    position: absolute;
+    top: -5px;
+    left: -5px;
 }
-
 .canvas__header h4 {
-    margin: 10px 50px 10px 10px;
     display: inline-block;
+    text-align: left;
+    margin-top: 0;
 }
-
-.score__text,
-.canvas__header .message,
-.canvas__header .message p {
-
-}
-.canvas__header .message p {
+.canvas__header p.score {
     margin: 0;
     display: inline-block;
+        font-weight: bold;
+}
+.canvas__header p.score:first-child {
+    margin-right: 15px;
+}
+.canvas__header .score > span {
+    font-weight: normal;
 }
 
-.canvas__header button {
-    background: #c00;
-    color: white;
-    border: none;
-    outline: 0;
-    padding: 3px 8px;
-    border-radius: 4px;
-}
-
-.canvas__header .message {
-    text-align: right;
-    padding: 10px;
+.col {
     width: 33%;
-}
-
-/*.message {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-        right: -250px;
-    width: 150px;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 3px;
-    border: 1px solid #ddd;
     text-align: center;
-}*/
+    margin-top: 4px;
+}
+.col:first-child {
+    text-align: left;
+}
+.canvas__header button {
+    background: #cecece;
+    border: 1px solid #555;
+    box-shadow: 1px 1px 0 #eee, -1px -1px 0 #888;
+    padding: 4px;
+    transition: background 100ms;
+    font-size: 13px;
+    margin-top: -6px;
+    text-transform: uppercase;
+}
+.col:last-child {
+    text-align: right;
+}
+.canvas__header button:hover {
+    cursor: pointer;
+    background: #ddd;
+}

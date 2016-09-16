@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>rockmover</title>
@@ -8,26 +9,33 @@
     <link href="css/main.css" rel="stylesheet" type="text/css">
 
 </head>
+
 <body>
     <div class="canvas-wrapper">
 
         <div class="canvas__header">
-            <h4>Rockmover</h4>
 
-            <div id="score" class="message">
-                <p id="score__text">
-                    Final score: <span id="score__number"></span>
-                </p>
+            <div class="col">
+                <h4>Rockmover</h4>
             </div>
 
-            <div id="buttons" class="message">
-                <!-- <p>
-                    Are you done?
-                </p> -->
-                <button id="new">
-                    New Game
-                </button>
-                <button id="end">Finish Game</button>
+            <div class="col">
+                <div id="score" class="message">
+                    <p id="best-score" class="score">
+                        Best score: <span id="best-score__number"></span>
+                    </p>
+                    <p id="current-score" class="score">
+                        Current score: <span id="current-score__number"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col">
+                <div id="buttons" class="message">
+                    <button id="new">
+                        New Game
+                    </button>
+                </div>
             </div>
 
 
@@ -37,9 +45,12 @@
         </canvas>
 
     </div>
-
-
+    <div>
+        <p class="attr">Texture courtesy of <a href="http://www.lostgarden.com/2006/07/more-free-game-graphics.html">Lost Garden</a></p>
+        <p class="attr"><a href="https://github.com/hcb/stonepacker">github repo</a></p>
+    </div>
 
     <script src="js/app.js"></script>
 </body>
+
 </html>

@@ -6,9 +6,7 @@ window.onload = function() {
         blockScale = 30,
         spriteScale = 40,
         blocks = [],
-        blockAtPointer = null,
-        colors = ["#6813AA", "#FFFF49", "#1962D1", "#DEBDCF", "#7D2866", "#46646A", "#D95C48", "#A52180", "#25EE2B", "#EA802F", "#665CBC", "#785C59"];
-
+        blockAtPointer = null;
 
     canvas.height = 600;
     canvas.width = 900;
@@ -17,11 +15,15 @@ window.onload = function() {
         rowCount = canvas.height / blockScale,
         startDragPosition,
         endDragPosition,
-        delta;
+        delta,
+        bestScore = null;
+
+    if (localStorage.getItem("rockmvrScore")) {
+        bestScore = localStorage.getItem("rockmvrScore");
+    }
 
     var bindEvents = function() {
         var buttonContainer = document.getElementById("buttons");
-        var endButton = document.getElementById("end");
         var newGameButton = document.getElementById("new");
         var active = null;
         var mouseDown = false;
@@ -32,17 +34,15 @@ window.onload = function() {
             if (getBlockAtPosition(position)) {
                 blockAtPointer = getBlockAtPosition(position);
             } else {
+
                 blockAtPointer = null;
             }
-
 
             if (mouseDown) {
                 endDragPosition = getPointerVector();
                 var deltaX = endDragPosition.x - startDragPosition.x;
-                console.log(deltaX);
                 if (Math.abs(deltaX) >= 1 && active !== null) {
-                    // var newX = deltaX > 0 ? active.pos.x + 1 : active.pos.x - 1;
-                    var newX = active.pos.x + deltaX;
+                    var newX = deltaX > 0 ? active.pos.x + 1 : active.pos.x - 1;
                     if (newX < 0) {
                         newX = 0;
                     } else if (newX + active.dim.width > columnCount) {
@@ -67,26 +67,27 @@ window.onload = function() {
             }
         }, false);
 
-        canvas.addEventListener("mouseup", function() {
-
-                    mouseDown = false;
-                    active = null;
+        canvas.addEventListener("mouseup", function(sc) {
+            mouseDown = false;
+            active = null;
         }, false);
 
-        newGameButton.style.visibility = "hidden";
-        endButton.addEventListener("click", function() {
+        if (!bestScore) {
+            document.getElementById("best-score").style.display = "none";
+        } else {
+            (document.getElementById("best-score__number")).innerHTML = bestScore
+        }
+
+        newGameButton.addEventListener("click", function() {
             cancelAnimationFrame(loop);
-            newGameButton.style.visibility = "visible";
-            canvas.style.pointerEvents = "none";
-            endButton.style.visibility = "hidden";
-            (document.getElementById("score__number")).innerHTML = getScore();
-        }, false);
-
-        newGameButton.addEventListener("click", function () {
-
-                    newGameButton.style.visibility = "hidden";
-            endButton.style.visibility = "visible";
-            (document.getElementById("score__number")).innerHTML = 0;
+            var score = getScore();
+            if (bestScore === null || score < bestScore) {
+                bestScore = score;
+            }
+            localStorage.setItem("rockmvrScore", bestScore);
+            document.getElementById("best-score").style.display = "inline-block";
+            (document.getElementById("best-score__number")).innerHTML = bestScore;
+            (document.getElementById("current-score__number")).innerHTML = 0;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             blocks = [];
             canvas.style.pointerEvents = "auto";
@@ -103,49 +104,58 @@ window.onload = function() {
 
     // Creates a new block with a random height, width, and coordinates
     var generateBlock = function() {
-      var blockSet = [
-        {
-            dim: { width: 1, height: 1},
+        var blockSet = [{
+            dim: {
+                width: 1,
+                height: 1
+            },
             spriteVector: createVector(40, 40),
             weight: 1
-        },
-        {
-            dim: { width: 1, height: 2},
+        }, {
+            dim: {
+                width: 1,
+                height: 2
+            },
             spriteVector: createVector(40, 200),
             weight: 1
-        },
-        {
-            dim: { width: 1, height: 3},
+        }, {
+            dim: {
+                width: 1,
+                height: 3
+            },
             spriteVector: createVector(120, 200),
             weight: 1
-        },
-        {
-            dim: { width: 2, height: 1},
+        }, {
+            dim: {
+                width: 2,
+                height: 1
+            },
             spriteVector: createVector(120, 40),
             weight: 1
-        },
-        {
-            dim: { width: 3, height: 1},
+        }, {
+            dim: {
+                width: 3,
+                height: 1
+            },
             spriteVector: createVector(120, 120),
-            weight: 1.6
-        }
-      ];
+            weight: 1.35
+        }];
 
         var totalWeight = 0;
-        blockSet.forEach( function(el) {
-          totalWeight += el.weight;
+        blockSet.forEach(function(el) {
+            totalWeight += el.weight;
         });
 
         var randomValue = Math.random() * totalWeight;
         var randomBlock = blockSet[0];
 
         for (var i = 0; i < blockSet.length; i++) {
-          if (randomValue < blockSet[i].weight) {
-            randomBlock = blockSet[i];
-            break;
-          } else {
-            randomValue -= blockSet[i].weight;
-          }
+            if (randomValue < blockSet[i].weight) {
+                randomBlock = blockSet[i];
+                break;
+            } else {
+                randomValue -= blockSet[i].weight;
+            }
         }
 
         var x = Math.floor(Math.random() * columnCount);
@@ -196,12 +206,12 @@ window.onload = function() {
         var block = generateBlock();
         var tries = 0;
 
-        while (tries < 20) {
-          if (couldBlockBeMoved(block, block.pos)) {
-              blocks.push(block);
-              return;
-          }
-          tries++;
+        while (tries < 5) {
+            if (couldBlockBeMoved(block, block.pos)) {
+                blocks.push(block);
+                return;
+            }
+            tries++;
         }
     };
 
@@ -263,8 +273,6 @@ window.onload = function() {
      * Canvas / Drawing
      */
     var drawBlock = function(block, color) {
-        //var strokeColor = blockAtPointer !== null && blockAtPointer == block ? "#ccc" : "#333";
-        //ctx.strokeStyle = "#ccc";
         ctx.beginPath();
         var spritePosX = blockAtPointer !== null && blockAtPointer == block ? block.spriteVector.x + 6 * spriteScale : block.spriteVector.x;
 
@@ -326,7 +334,7 @@ window.onload = function() {
             drawBlocks();
             moveBlocksDown();
             createNewBlocks();
-            (document.getElementById("score__number")).innerHTML = getScore();
+            (document.getElementById("current-score__number")).innerHTML = getScore();
         }
     };
 
